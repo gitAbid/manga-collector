@@ -8,10 +8,10 @@ import core.mangacollector.repository.LatestUpdateRepository
 import core.mangacollector.repository.MangaRepository
 import org.jsoup.Jsoup
 import org.slf4j.LoggerFactory
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.util.*
 import javax.annotation.PostConstruct
+import kotlin.collections.HashSet
 import kotlin.collections.LinkedHashSet
 
 @Service
@@ -23,7 +23,22 @@ class Collector(var luRepo: LatestUpdateRepository,
     @PostConstruct
     fun init() {
         logger.info("Collector initialized")
-        //timeElapsedToExecute { chapterUrlFixer() }
+        timeElapsedToExecute {
+            chapterUrlFixer()
+            brokenImageUrl()
+            sourceFromManganelo()
+        }
+    }
+
+    private fun sourceFromManganelo() {
+        val mangas = luRepo.findAll()
+        val nameSet = HashSet<String>()
+        mangas.forEach { manga ->
+            if (manga.mangaUrl.startsWith("https://manganelo.com/")) {
+                nameSet.add(manga.mangaName)
+            }
+        }
+        logger.info("Source From Chapter URL $nameSet")
     }
 
     private fun chapterUrlFixer() {
@@ -35,7 +50,7 @@ class Collector(var luRepo: LatestUpdateRepository,
                 val updatedImages = LinkedHashSet<String>()
                 val images = chapter.chapterImages
                 for (image in images) {
-                    updatedImages.add(image.replace(Regex("(s\\d.m)"), "s8.m").replace(Regex("(\\d.com)"), "8.com"))
+                    updatedImages.add(image.replace(Regex("(s\\d+\\.m)"), "s8.m").replace(Regex("((\\d+\\.com))"), "8.com"))
                 }
                 chapter.chapterImages = updatedImages
                 updatedChapters.add(chapter)
@@ -45,7 +60,33 @@ class Collector(var luRepo: LatestUpdateRepository,
         }
     }
 
-  //  @Scheduled(fixedRate = 900000)
+    private fun brokenImageUrl() {
+        val mangas = mangaRepository.findAll()
+        val nameSet = HashSet<String>()
+        mangas.forEach { manga ->
+            manga.chapters.forEach { chapter ->
+                chapter.chapterImages.forEach { image ->
+                    if (image.split(".").size > 4) {
+                        logger.info("ImageURL: $image")
+                        logger.info("MangaNamr: ${manga.mangaName}")
+                        nameSet.add(manga.mangaName)
+
+                    }
+                }
+            }
+        }
+        logger.info("Broken Chapter URL $nameSet")
+        nameSet.forEach { name ->
+            val latestManga = luRepo.findByMangaName(name)
+            latestManga?.let {
+                logger.info("Collecting details for manga :${latestManga.mangaName}")
+                collectMangaDetail(latestManga)
+                logger.info("Collecting details finished for manga :${latestManga.mangaName}")
+            }
+        }
+    }
+
+    //@Scheduled(fixedRate = 900000)
     fun latestUpdate() {
         logger.info("Running latest manga updates collector")
         val initDoc = Jsoup.connect("https://mangakakalot.com/manga_list?type=latest&category=all&state=all&page=1").get()
@@ -79,18 +120,18 @@ class Collector(var luRepo: LatestUpdateRepository,
                     latestChapterUrl = link.attr("abs:href")
                     coverImageUrl = it.select("img").first().attr("abs:src")
 
-                    luRepo.findByMangaName(name)?.let { it ->
-                        it.mangaName = name
-                        it.description = description
-                        it.mangaUrl = mangaUrl
-                        it.cover = coverImageUrl
-                        if (it.latestChapter != latestChapterUrl) {
-                            it.lastChapterUpdated = Date()
-                            it.isChapterUpdated = true
+                    luRepo.findByMangaName(name)?.let { mangaUpdate ->
+                        mangaUpdate.mangaName = name
+                        mangaUpdate.description = description
+                        mangaUpdate.mangaUrl = mangaUrl
+                        mangaUpdate.cover = coverImageUrl
+                        if (mangaUpdate.latestChapter != latestChapterUrl) {
+                            mangaUpdate.lastChapterUpdated = Date()
+                            mangaUpdate.isChapterUpdated = true
                         }
-                        it.viewCount = viewCount
-                        it.latestChapter = latestChapterUrl
-                        luRepo.save(it)
+                        mangaUpdate.viewCount = viewCount
+                        mangaUpdate.latestChapter = latestChapterUrl
+                        luRepo.save(mangaUpdate)
 
                     } ?: run {
                         luRepo.save(LatestMangaUpdate(
@@ -111,7 +152,7 @@ class Collector(var luRepo: LatestUpdateRepository,
     }
 
 
-    @Scheduled(fixedRate = 300000)
+    //@Scheduled(fixedRate = 300000)
     fun mangaDetailsCollector() {
         logger.info("Running manga details collector")
         val mangas = luRepo.findAll()
@@ -230,7 +271,7 @@ class Collector(var luRepo: LatestUpdateRepository,
         val images = doc.select(".vung-doc").select("img")
         images?.forEach {
             val imageLink = it.attr("abs:src")
-            chapterImages.add(imageLink.replace(Regex("(s\\d.m)"), "s8.m").replace(Regex("(\\d.com)"), "8.com"))
+            chapterImages.add(imageLink)
         }
         return chapterImages
     }
