@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository
 interface LatestUpdateRepository : MongoRepository<LatestMangaUpdate, String> {
     fun findByMangaName(name: String): LatestMangaUpdate?
     fun findAllByOrderByMangaName(): List<LatestMangaUpdate>
+    fun findByChapterUpdated(update: Boolean): List<LatestMangaUpdate>
 }
