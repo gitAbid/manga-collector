@@ -58,7 +58,7 @@ data class Chapter(
 
 @Document
 data class UpdateStatus(var id: String = ObjectId().toHexString(),
-                        var mangUrl: String, var updatedOn: Date = Date(), var lastChapter: String)
+                        var mangaUrl: String, var updatedOn: Date = Date(), var lastChapter: String)
 
 data class Trending(
         @Id

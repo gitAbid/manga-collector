@@ -19,6 +19,7 @@ class TaskRunner(val collector: Collector) {
     @PostConstruct
     fun init() {
         logger.info("TaskRunner initialized")
+        BUC_FULL()
     }
 
     fun BCC_FULL() {
@@ -50,7 +51,7 @@ class TaskRunner(val collector: Collector) {
     fun FREQUENT_RUNNER() {
         LMC_5_MIN()
         MDC_FULL()
-        BUC_FULL()
+        BUC()
         TMC()
         PMC()
     }
@@ -79,9 +80,15 @@ class TaskRunner(val collector: Collector) {
         }
     }
 
+    fun BUC() {
+        logTaskRunner("BUC") {
+            collector.brokenUrlFixer()
+        }
+    }
+
     fun BUC_FULL() {
         logTaskRunner("BUC_FULL") {
-            collector.brokenUrlFixer()
+            collector.brokenUrlFixerFull()
         }
     }
 
