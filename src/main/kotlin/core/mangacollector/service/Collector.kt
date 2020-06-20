@@ -35,7 +35,7 @@ class Collector(val luRepo: LatestUpdateRepository,
             updates.content.forEach { update ->
                 val manga = mangaRepository.findByMangaUrl(update.mangaUrl)
                 manga?.let {
-                    logger.debug("Fixing broken chapter for manga : ${manga.mangaName}")
+                    logger.info("Fixing broken chapter for manga : ${manga.mangaName}")
                     val updatedChapters = LinkedHashSet<Chapter>()
                     val chapters = manga.chapters
                     for (chapter in chapters) {
@@ -72,7 +72,7 @@ class Collector(val luRepo: LatestUpdateRepository,
             updates.content.forEach { update ->
                 val manga = mangaRepository.findByMangaUrl(update.mangaUrl)
                 manga?.let {
-                    logger.debug("Fixing broken chapter for manga : ${manga.mangaName}")
+                    logger.info("Fixing broken chapter for manga : ${manga.mangaName}")
                     val updatedChapters = LinkedHashSet<Chapter>()
                     val chapters = manga.chapters
                     for (chapter in chapters) {

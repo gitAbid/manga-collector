@@ -1,0 +1,40 @@
+2020-06-20 22:56:05,607 INFO core.mangacollector.MangaCollectorApplicationKt [restartedMain] Starting MangaCollectorApplicationKt on Abid-Hasan with PID 12148 (C:\Users\Abid Hasan\OneDrive\Codes\CSE 327\manga-collector\build\classes\kotlin\main started by Abid Hasan in C:\Users\Abid Hasan\OneDrive\Codes\CSE 327\manga-collector)
+2020-06-20 22:56:05,609 INFO core.mangacollector.MangaCollectorApplicationKt [restartedMain] No active profile set, falling back to default profiles: default
+2020-06-20 22:56:07,768 INFO core.mangacollector.service.Collector [restartedMain] Collector initialized
+2020-06-20 22:56:07,772 INFO core.mangacollector.service.TaskRunner [restartedMain] TaskRunner initialized
+2020-06-20 22:56:07,773 INFO core.mangacollector.service.TaskRunner [restartedMain] Running BUC_FULL at Sat Jun 20 22:56:07 BDT 2020
+2020-06-20 22:56:08,388 INFO core.mangacollector.service.Collector [restartedMain] Performing batch url fixes for 2654 pages for 26533 items
+2020-06-20 22:56:08,388 INFO core.mangacollector.service.Collector [restartedMain] Performing url fixes for batch : 72
+2020-06-20 22:56:09,520 INFO core.mangacollector.service.Collector [restartedMain] Fixing broken chapter for manga : I Was Just An Ordinary Lady
+2020-06-20 22:56:10,125 INFO core.mangacollector.service.Collector [restartedMain] Fixing broken chapter for manga : Don't Provoke the Contract Wife
+2020-06-20 22:56:10,604 INFO core.mangacollector.service.Collector [restartedMain] Fixing broken chapter for manga : Kings' Viking
+2020-06-20 22:56:11,125 INFO core.mangacollector.service.Collector [restartedMain] Fixing broken chapter for manga : Sugar Daddy
+2020-06-20 22:56:11,641 INFO core.mangacollector.service.Collector [restartedMain] Fixing broken chapter for manga : Hiro-kun ga Sensei
+2020-06-20 22:56:12,102 INFO core.mangacollector.service.Collector [restartedMain] Fixing broken chapter for manga : Beware of Demons
+2020-06-20 22:56:12,610 INFO core.mangacollector.service.Collector [restartedMain] Fixing broken chapter for manga : Nuan Nuan Wu
+2020-06-20 22:56:13,092 INFO core.mangacollector.service.Collector [restartedMain] Fixing broken chapter for manga : Chotto Ippai!
+2020-06-20 22:56:13,873 INFO core.mangacollector.service.Collector [restartedMain] Fixing broken chapter for manga : Giant Killing
+2020-06-20 22:56:14,754 INFO core.mangacollector.service.Collector [restartedMain] Fixing broken chapter for manga : Radiation House
+2020-06-20 22:56:14,773 INFO core.mangacollector.service.Collector [restartedMain] Performing url fixes for batch : 73
+2020-06-20 22:56:15,758 INFO core.mangacollector.service.Collector [restartedMain] Fixing broken chapter for manga : This Lady Is Too Much
+2020-06-20 22:56:16,261 INFO core.mangacollector.service.Collector [restartedMain] Fixing broken chapter for manga : She is a Beauty
+2020-06-20 22:56:16,752 INFO core.mangacollector.service.Collector [restartedMain] Fixing broken chapter for manga : Mozuya-san Gyakujousuru
+2020-06-20 22:56:17,266 INFO core.mangacollector.service.Collector [restartedMain] Fixing broken chapter for manga : Gingitsune
+2020-06-20 22:56:17,778 INFO core.mangacollector.service.Collector [restartedMain] Fixing broken chapter for manga : Isekai demo fuuzoku jou yatte mita
+2020-06-20 22:56:18,329 INFO core.mangacollector.service.Collector [restartedMain] Fixing broken chapter for manga : West Heaven Garden
+2020-06-20 22:56:18,850 INFO core.mangacollector.service.Collector [restartedMain] Fixing broken chapter for manga : Last Paradise
+2020-06-20 22:58:10,713 INFO core.mangacollector.MangaCollectorApplicationKt [restartedMain] Starting MangaCollectorApplicationKt on Abid-Hasan with PID 10732 (C:\Users\Abid Hasan\OneDrive\Codes\CSE 327\manga-collector\build\classes\kotlin\main started by Abid Hasan in C:\Users\Abid Hasan\OneDrive\Codes\CSE 327\manga-collector)
+2020-06-20 22:58:10,716 INFO core.mangacollector.MangaCollectorApplicationKt [restartedMain] No active profile set, falling back to default profiles: default
+2020-06-20 22:58:12,923 INFO core.mangacollector.service.Collector [restartedMain] Collector initialized
+2020-06-20 22:58:12,927 INFO core.mangacollector.service.TaskRunner [restartedMain] TaskRunner initialized
+2020-06-20 22:58:12,928 INFO core.mangacollector.service.TaskRunner [restartedMain] Running BUC_FULL at Sat Jun 20 22:58:12 BDT 2020
+2020-06-20 22:58:13,558 INFO core.mangacollector.service.Collector [restartedMain] Performing batch url fixes for 2654 pages for 26533 items
+2020-06-20 22:58:13,558 INFO core.mangacollector.service.Collector [restartedMain] Performing url fixes for batch : 72
+2020-06-20 22:58:19,393 INFO core.mangacollector.service.Collector [restartedMain] Performing url fixes for batch : 73
+2020-06-20 22:58:25,550 INFO core.mangacollector.service.Collector [restartedMain] Performing url fixes for batch : 74
+2020-06-20 22:58:31,493 INFO core.mangacollector.service.Collector [restartedMain] Performing url fixes for batch : 75
+2020-06-20 22:58:37,205 INFO core.mangacollector.service.Collector [restartedMain] Performing url fixes for batch : 76
+2020-06-20 22:58:42,678 INFO core.mangacollector.service.Collector [restartedMain] Performing url fixes for batch : 77
+2020-06-20 22:58:48,205 INFO core.mangacollector.service.Collector [restartedMain] Performing url fixes for batch : 78
+2020-06-20 22:58:54,094 INFO core.mangacollector.service.Collector [restartedMain] Performing url fixes for batch : 79
+2020-06-20 22:58:59,753 INFO core.mangacollector.service.Collector [restartedMain] Performing url fixes for batch : 80
