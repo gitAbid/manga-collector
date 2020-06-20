@@ -27,7 +27,12 @@ class TaskRunner(val collector: Collector) {
         }
     }
 
-    @Scheduled(cron = "0 0 0 * * ?")
+    @Scheduled(cron = "\${task.runner.daily.schedule}")
+    private fun TASK_DAILY() {
+        LMC_FULL()
+    }
+
+
     fun LMC_FULL() {
         logTaskRunner("LMC_FULL") {
             val initDoc = Jsoup.connect("https://mangakakalot.com/manga_list?type=latest&category=all&state=all&page=1").get()
@@ -41,14 +46,13 @@ class TaskRunner(val collector: Collector) {
         }
     }
 
-    @Scheduled(cron = "0 */5 * ? * *")
-    fun TASK_5_MIN() {
+    @Scheduled(cron = "\${task.runner.frequent.schedule}")
+    fun FREQUENT_RUNNER() {
         LMC_5_MIN()
         MDC_FULL()
         BUC_FULL()
         TMC()
         PMC()
-
     }
 
     fun LMC_5_MIN() {
@@ -75,19 +79,12 @@ class TaskRunner(val collector: Collector) {
         }
     }
 
-    @Scheduled(cron = "0 0 1 * * ?")
-    fun GMG() {
-        logTaskRunner("GMG") {
-            collector.generateMangaGenres()
-        }
-    }
-
-    @Scheduled(cron = "0 0 */4 ? * *")
     fun BUC_FULL() {
         logTaskRunner("BUC_FULL") {
             collector.brokenUrlFixer()
         }
     }
+
 
     fun logTaskRunner(taskName: String, function: () -> Unit) {
         val start = Date();

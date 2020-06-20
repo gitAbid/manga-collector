@@ -9,7 +9,6 @@ import org.springframework.stereotype.Service
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
-import kotlin.collections.ArrayList
 import kotlin.collections.HashSet
 import kotlin.collections.LinkedHashSet
 
@@ -17,9 +16,8 @@ import kotlin.collections.LinkedHashSet
 @Service
 class Collector(val luRepo: LatestUpdateRepository,
                 val mangaRepository: MangaRepository,
+                val mangaCompactRepository: MangaCompactRepository,
                 val updateStatusRepository: UpdateStatusRepository,
-                val trendingRepository: TrendingRepository,
-                val mostPopularRepository: MostPopularRepository,
                 val genresRepository: GenresRepository) {
     val logger = LoggerFactory.getLogger(Collector::class.java)
 
@@ -397,59 +395,64 @@ class Collector(val luRepo: LatestUpdateRepository,
 
     fun collectTrending() {
         logger.info("Start collecting trending manga")
+        resetTrendingTag()
         val doc = Jsoup.connect("https://manganelo.com/").timeout(300000).get()
         val trendingDoc = doc.select(".owl-carousel").select(".slide-caption");
-        val trends = ArrayList<Trending>()
         trendingDoc?.forEach { trend ->
             val url = trend.select(".a-h").first().select("a").attr("href")
             mangaRepository.findByMangaUrl(url)?.let {
-                trends.add(Trending(mangaName = it.mangaName, mangaId = it.id))
+                it.trending = true
+                mangaRepository.save(it)
             }
         }
-        if (trends.size > 0) {
-            trendingRepository.deleteAll()
-            trendingRepository.saveAll(trends)
-        }
-        logger.info("Finished collecting trending manga. $trends")
+
+        logger.info("Finished collecting trending manga")
 
     }
 
     fun collectMostPopular() {
         logger.info("Start collecting most popular manga")
+        resetMostPopularTag();
         val doc = Jsoup.connect("https://mangakakalot.com/").timeout(300000).get()
         val mostPopularDoc = doc.select(".owl-carousel").select(".slide-caption")
-        val popularMangas = ArrayList<MostPopular>()
         mostPopularDoc?.forEach { popular ->
             val url = popular.select("a[href]").first().select("a").attr("href")
             mangaRepository.findByMangaUrl(url)?.let {
-                popularMangas.add(MostPopular(mangaName = it.mangaName, mangaId = it.id))
+                it.mostPopular = true
+                mangaRepository.save(it)
             }
         }
-        if (popularMangas.size > 0) {
-            mostPopularRepository.deleteAll()
-            mostPopularRepository.saveAll(popularMangas)
-        };
-        logger.info("Finished collecting most popular manga. $popularMangas")
+        logger.info("Finished collecting most popular manga.")
     }
 
-    fun generateMangaGenres() {
-        logger.info("Genres generation started")
-        val page = 1
-        val pageItem = 10
-        var mangas = mangaRepository.findAll(PageRequest.of(page, pageItem))
-        val genresStringSet = linkedSetOf<String>()
-        logger.info("Performing genres generation for ${mangas.totalPages} pages for ${mangas.totalElements} items")
-        for (x in 1..mangas.totalPages) {
-            logger.info("Performing genres generation for batch : $x")
-            mangas = mangaRepository.findAll(PageRequest.of(x, pageItem))
-            val values = mangas.content.flatMap { manga -> manga.genres }.toCollection(destination = linkedSetOf())
-            genresStringSet.addAll(values)
+
+    fun resetTrendingTag() {
+        val page = 1;
+        val pageItem = 10;
+        var resetContent = mangaRepository.findByTrendingTrue(PageRequest.of(page, pageItem));
+        logger.info("Performing resetting popular status for ${resetContent.totalPages} pages for ${resetContent.totalElements} items")
+        for (x in 1..resetContent.totalPages) {
+            logger.info("Performing resetting popular status for batch : $x")
+            resetContent = mangaRepository.findByTrendingTrue(PageRequest.of(page, pageItem));
+            resetContent.content.map { mangaCompact -> mangaCompact.trending = false }
+            mangaRepository.saveAll(resetContent)
         }
-        val genres = genresStringSet.map { genres -> Genres(genres) }.toCollection(destination = linkedSetOf())
-        if (genres.size > 0) {
-            genresRepository.saveAll(genres)
-        }
-        logger.info("Genres generation finished: $genres")
+        logger.info("Finished resetting popular status for ${resetContent.totalPages} pages for ${resetContent.totalElements} items")
+
     }
 
+    fun resetMostPopularTag() {
+        val page = 1;
+        val pageItem = 10;
+        var resetContent = mangaRepository.findByMostPopularTrue(PageRequest.of(page, pageItem));
+        logger.info("Performing resetting popular status for ${resetContent.totalPages} pages for ${resetContent.totalElements} items")
+        for (x in 1..resetContent.totalPages) {
+            logger.info("Performing resetting popular status for batch : $x")
+            resetContent = mangaRepository.findByMostPopularTrue(PageRequest.of(x, pageItem));
+            resetContent.content.map { mangaCompact -> mangaCompact.trending = false }
+            mangaRepository.saveAll(resetContent)
+        }
+        logger.info("Finished resetting popular status for ${resetContent.totalPages} pages for ${resetContent.totalElements} items")
+
+    }
 }
