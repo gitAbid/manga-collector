@@ -70,7 +70,7 @@ class Collector(val luRepo: LatestUpdateRepository,
             logger.info("Performing url fixes for batch : $x")
             updates = mangaRepository.findAll(PageRequest.of(x, pageItem));
             updates.content.forEach { update ->
-                val manga = mangaRepository.findByMangaUrl("https://manganelo.com/manga/ad921253")
+                val manga = mangaRepository.findByMangaUrl(update.mangaUrl)
                 manga?.let {
                     logger.debug("Fixing broken chapter for manga : ${manga.mangaName}")
                     val updatedChapters = LinkedHashSet<Chapter>()
