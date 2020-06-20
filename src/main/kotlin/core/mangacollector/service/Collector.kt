@@ -3,8 +3,10 @@ package core.mangacollector.service
 import core.mangacollector.model.Chapter
 import core.mangacollector.model.LatestMangaUpdate
 import core.mangacollector.model.Manga
+import core.mangacollector.model.UpdateStatus
 import core.mangacollector.repository.LatestUpdateRepository
 import core.mangacollector.repository.MangaRepository
+import core.mangacollector.repository.UpdateStatusRepository
 import org.jsoup.Jsoup
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.PageRequest
@@ -17,8 +19,9 @@ import kotlin.collections.LinkedHashSet
 
 
 @Service
-class Collector(var luRepo: LatestUpdateRepository,
-                var mangaRepository: MangaRepository) {
+class Collector(val luRepo: LatestUpdateRepository,
+                val mangaRepository: MangaRepository,
+                val updateStatusRepository: UpdateStatusRepository) {
     val logger = LoggerFactory.getLogger(Collector::class.java)
 
     @PostConstruct
@@ -29,29 +32,36 @@ class Collector(var luRepo: LatestUpdateRepository,
     fun brokenUrlFixer() {
         val page = 1;
         val pageItem = 10;
-        var mangas = mangaRepository.findAll(PageRequest.of(page, pageItem))
-        logger.info("Performing batch url fixes for ${mangas.totalPages} pages for ${mangas.totalElements} items")
-        for (x in 1..mangas.totalPages) {
+        var updates = updateStatusRepository.findAll(PageRequest.of(page, pageItem));
+        logger.info("Performing batch url fixes for ${updates.totalPages} pages for ${updates.totalElements} items")
+        for (x in 1..updates.totalPages) {
             logger.info("Performing url fixes for batch : $x")
-            mangas = mangaRepository.findAll(PageRequest.of(x, pageItem))
-            for (manga in mangas.content) {
-                logger.debug("Fixing broken chapter for manga : ${manga.mangaName}")
-                val updatedChapters = LinkedHashSet<Chapter>()
-                val chapters = manga.chapters
-                for (chapter in chapters) {
-                    println("Fixing broken chapter : ${chapter.chapterName}")
-                    val updatedImages = LinkedHashSet<String>()
-                    val images = chapter.chapterImages
-                    for (image in images) {
-                        var updated = image.replace(Regex("(s\\d+\\.m)"), "s8.m").replace(Regex("(\\d+\\.com)"), "8.com")
-                        updated = updated.replace("https://bu.mkklcdnbuv8.com", "https://bu.mkklcdnbuv1.com")
-                        updatedImages.add(updated)
+            updates = updateStatusRepository.findAll(PageRequest.of(x, pageItem));
+            updates.content.forEach { update ->
+                val manga = mangaRepository.findByMangaName(update.mangaName)
+                manga?.let {
+                    logger.debug("Fixing broken chapter for manga : ${manga.mangaName}")
+                    val updatedChapters = LinkedHashSet<Chapter>()
+                    val chapters = manga.chapters
+                    for (chapter in chapters) {
+                        logger.info("Fixing broken chapter : ${chapter.chapterName}")
+                        val updatedImages = LinkedHashSet<String>()
+                        val images = chapter.chapterImages
+                        for (image in images) {
+                            var updated = image.replace(Regex("(s\\d+\\.m)"), "s8.m").replace(Regex("(\\d+\\.com)"), "8.com")
+                            updated = updated.replace("https://bu.mkklcdnbuv8.com", "https://bu.mkklcdnbuv1.com")
+                            updatedImages.add(updated)
+                        }
+                        chapter.chapterImages = updatedImages
+                        updatedChapters.add(chapter)
                     }
-                    chapter.chapterImages = updatedImages
-                    updatedChapters.add(chapter)
+                    manga.chapters = updatedChapters
+                    mangaRepository.save(manga)
+                    logger.info("Removing updates from table : ${update}")
+                    updateStatusRepository.delete(update)
+                } ?: run {
+                    logger.info("No manga found to fix url with name : ${update.mangaName}")
                 }
-                manga.chapters = updatedChapters
-                mangaRepository.save(manga)
             }
         }
 
@@ -123,6 +133,10 @@ class Collector(var luRepo: LatestUpdateRepository,
                         if (mangaUpdate.latestChapter != latestChapterUrl) {
                             mangaUpdate.lastChapterUpdated = Date()
                             mangaUpdate.chapterUpdated = true
+                            updateStatusRepository.save(UpdateStatus(
+                                    mangaName = name,
+                                    lastChapter = latestChapterUrl
+                            ))
                         }
                         mangaUpdate.lastUpdated = Date()
                         mangaUpdate.viewCount = viewCount
@@ -174,13 +188,13 @@ class Collector(var luRepo: LatestUpdateRepository,
     private fun collectMangaDetail(latestManga: LatestMangaUpdate) {
         logger.info("Collecting from url: ${latestManga.mangaUrl}")
         val doc = Jsoup.connect(latestManga.mangaUrl).timeout(300000).get()
-        var cover=""
+        var cover = ""
         val authors = LinkedHashSet<String>()
         val genres = LinkedHashSet<String>()
         var status = ""
         var mangaLastUpdated = ""
         var rating: Double? = 0.0
-        var description=""
+        var description = ""
         val chapters = LinkedHashSet<Chapter>()
 
         if (latestManga.mangaUrl.startsWith("https://mangakakalot.com/")) {

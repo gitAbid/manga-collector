@@ -53,3 +53,7 @@ data class Chapter(
         var chapterAdded: String = "",
         var chapterLink: String
 )
+
+@Document
+data class UpdateStatus(var id: String = ObjectId().toHexString(),
+                        var mangaName: String, var updatedOn: Date = Date(), var lastChapter: String)

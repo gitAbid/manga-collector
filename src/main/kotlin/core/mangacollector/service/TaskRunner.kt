@@ -19,8 +19,8 @@ class TaskRunner(val collector: Collector) {
     @PostConstruct
     fun init() {
         logger.info("TaskRunner initialized")
-        BCC_FULL()
-        BUC_FULL()
+        //BCC_FULL()
+        //BUC_FULL()
         logger.info("TaskRunner initialized finished")
 
     }
@@ -49,6 +49,8 @@ class TaskRunner(val collector: Collector) {
     fun TASK_5_MIN() {
         LMC_5_MIN()
         MDC_FULL()
+        BUC_FULL()
+
     }
 
     fun LMC_5_MIN() {
