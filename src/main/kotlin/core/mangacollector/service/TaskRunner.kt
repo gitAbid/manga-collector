@@ -4,12 +4,11 @@ import org.jsoup.Jsoup
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.scheduling.annotation.Scheduled
-import org.springframework.stereotype.Component
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
 
-@Component
+//@Component
 class TaskRunner(val collector: Collector) {
     val logger = LoggerFactory.getLogger(TaskRunner::class.java)
 
@@ -19,10 +18,6 @@ class TaskRunner(val collector: Collector) {
     @PostConstruct
     fun init() {
         logger.info("TaskRunner initialized")
-        //BCC_FULL()
-        //BUC_FULL()
-        logger.info("TaskRunner initialized finished")
-
     }
 
     fun BCC_FULL() {
@@ -50,6 +45,8 @@ class TaskRunner(val collector: Collector) {
         LMC_5_MIN()
         MDC_FULL()
         BUC_FULL()
+        TMC()
+        PMC()
 
     }
 
@@ -65,13 +62,31 @@ class TaskRunner(val collector: Collector) {
         }
     }
 
+    fun TMC() {
+        logTaskRunner("TMC") {
+            collector.collectTrending()
+        }
+    }
+
+    fun PMC() {
+        logTaskRunner("PMC") {
+            collector.collectMostPopular()
+        }
+    }
+
+    @Scheduled(cron = "0 0 1 * * ?")
+    fun GMG() {
+        logTaskRunner("GMG") {
+            collector.generateMangaGenres()
+        }
+    }
+
     @Scheduled(cron = "0 0 */4 ? * *")
     fun BUC_FULL() {
         logTaskRunner("BUC_FULL") {
             collector.brokenUrlFixer()
         }
     }
-
 
     fun logTaskRunner(taskName: String, function: () -> Unit) {
         val start = Date();

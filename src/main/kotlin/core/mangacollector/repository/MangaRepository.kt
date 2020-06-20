@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository
 @Repository
 interface MangaRepository : MongoRepository<Manga, String> {
     fun findByMangaName(name: String): Manga?
+    fun findByMangaUrl(url: String): Manga?
 }

@@ -1,12 +1,7 @@
 package core.mangacollector.service
 
-import core.mangacollector.model.Chapter
-import core.mangacollector.model.LatestMangaUpdate
-import core.mangacollector.model.Manga
-import core.mangacollector.model.UpdateStatus
-import core.mangacollector.repository.LatestUpdateRepository
-import core.mangacollector.repository.MangaRepository
-import core.mangacollector.repository.UpdateStatusRepository
+import core.mangacollector.model.*
+import core.mangacollector.repository.*
 import org.jsoup.Jsoup
 import org.slf4j.LoggerFactory
 import org.springframework.data.domain.PageRequest
@@ -14,6 +9,7 @@ import org.springframework.stereotype.Service
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
+import kotlin.collections.ArrayList
 import kotlin.collections.HashSet
 import kotlin.collections.LinkedHashSet
 
@@ -21,7 +17,10 @@ import kotlin.collections.LinkedHashSet
 @Service
 class Collector(val luRepo: LatestUpdateRepository,
                 val mangaRepository: MangaRepository,
-                val updateStatusRepository: UpdateStatusRepository) {
+                val updateStatusRepository: UpdateStatusRepository,
+                val trendingRepository: TrendingRepository,
+                val mostPopularRepository: MostPopularRepository,
+                val genresRepository: GenresRepository) {
     val logger = LoggerFactory.getLogger(Collector::class.java)
 
     @PostConstruct
@@ -38,7 +37,7 @@ class Collector(val luRepo: LatestUpdateRepository,
             logger.info("Performing url fixes for batch : $x")
             updates = updateStatusRepository.findAll(PageRequest.of(x, pageItem));
             updates.content.forEach { update ->
-                val manga = mangaRepository.findByMangaName(update.mangaName)
+                val manga = mangaRepository.findByMangaUrl(update.mangUrl)
                 manga?.let {
                     logger.debug("Fixing broken chapter for manga : ${manga.mangaName}")
                     val updatedChapters = LinkedHashSet<Chapter>()
@@ -60,7 +59,7 @@ class Collector(val luRepo: LatestUpdateRepository,
                     logger.info("Removing updates from table : ${update}")
                     updateStatusRepository.delete(update)
                 } ?: run {
-                    logger.info("No manga found to fix url with name : ${update.mangaName}")
+                    logger.info("No manga found to fix url with name : ${update.mangUrl}")
                 }
             }
         }
@@ -134,7 +133,7 @@ class Collector(val luRepo: LatestUpdateRepository,
                             mangaUpdate.lastChapterUpdated = Date()
                             mangaUpdate.chapterUpdated = true
                             updateStatusRepository.save(UpdateStatus(
-                                    mangaName = name,
+                                    mangUrl = mangaUrl,
                                     lastChapter = latestChapterUrl
                             ))
                         }
@@ -160,7 +159,6 @@ class Collector(val luRepo: LatestUpdateRepository,
         }
         logger.info("Finished running latest manga updates collector")
     }
-
 
     fun mangaDetailsCollector() {
         logger.info("Running manga details collector")
@@ -374,7 +372,6 @@ class Collector(val luRepo: LatestUpdateRepository,
         return chapterImages
     }
 
-
     private fun collectChapterImagesFromMangakakalotUrl(chapterLink: String?): LinkedHashSet<String> {
         val chapterImages = LinkedHashSet<String>()
         val doc = Jsoup.connect(chapterLink).get()
@@ -397,4 +394,62 @@ class Collector(val luRepo: LatestUpdateRepository,
         val diffInSec = TimeUnit.MILLISECONDS.toSeconds(diffInMillisec)
         logger.info("Time took to finish $diffInSec seconds or  $diffInMin minutes")
     }
+
+    fun collectTrending() {
+        logger.info("Start collecting trending manga")
+        val doc = Jsoup.connect("https://manganelo.com/").timeout(300000).get()
+        val trendingDoc = doc.select(".owl-carousel").select(".slide-caption");
+        val trends = ArrayList<Trending>()
+        trendingDoc?.forEach { trend ->
+            val url = trend.select(".a-h").first().select("a").attr("href")
+            mangaRepository.findByMangaUrl(url)?.let {
+                trends.add(Trending(mangaName = it.mangaName, mangaId = it.id))
+            }
+        }
+        if (trends.size > 0) {
+            trendingRepository.deleteAll()
+            trendingRepository.saveAll(trends)
+        }
+        logger.info("Finished collecting trending manga. $trends")
+
+    }
+
+    fun collectMostPopular() {
+        logger.info("Start collecting most popular manga")
+        val doc = Jsoup.connect("https://mangakakalot.com/").timeout(300000).get()
+        val mostPopularDoc = doc.select(".owl-carousel").select(".slide-caption")
+        val popularMangas = ArrayList<MostPopular>()
+        mostPopularDoc?.forEach { popular ->
+            val url = popular.select("a[href]").first().select("a").attr("href")
+            mangaRepository.findByMangaUrl(url)?.let {
+                popularMangas.add(MostPopular(mangaName = it.mangaName, mangaId = it.id))
+            }
+        }
+        if (popularMangas.size > 0) {
+            mostPopularRepository.deleteAll()
+            mostPopularRepository.saveAll(popularMangas)
+        };
+        logger.info("Finished collecting most popular manga. $popularMangas")
+    }
+
+    fun generateMangaGenres() {
+        logger.info("Genres generation started")
+        val page = 1
+        val pageItem = 10
+        val genres = linkedSetOf<Genres>()
+        var mangas = mangaRepository.findAll(PageRequest.of(page, pageItem))
+        logger.info("Performing genres generation for ${mangas.totalPages} pages for ${mangas.totalElements} items")
+        for (x in 1..mangas.totalPages) {
+            logger.info("Performing genres generation for batch : $x")
+            mangas = mangaRepository.findAll(PageRequest.of(x, pageItem))
+            mangas.content.forEach { manga ->
+                genres.addAll(manga.genres.map { value -> Genres(value) })
+            }
+        }
+        if (genres.size > 0) {
+            genresRepository.saveAll(genres)
+        }
+        logger.info("Genres generation finished: $genres")
+    }
+
 }

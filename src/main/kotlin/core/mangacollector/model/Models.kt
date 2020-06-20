@@ -56,4 +56,20 @@ data class Chapter(
 
 @Document
 data class UpdateStatus(var id: String = ObjectId().toHexString(),
-                        var mangaName: String, var updatedOn: Date = Date(), var lastChapter: String)
+                        var mangUrl: String, var updatedOn: Date = Date(), var lastChapter: String)
+
+data class Trending(
+        @Id
+        var id: String = ObjectId().toHexString(),
+        var mangaName: String,
+        var mangaId: String
+)
+
+data class MostPopular(
+        @Id
+        var id: String = ObjectId().toHexString(),
+        var mangaName: String,
+        var mangaId: String
+)
+
+data class Genres(@Id val genreName: String)
