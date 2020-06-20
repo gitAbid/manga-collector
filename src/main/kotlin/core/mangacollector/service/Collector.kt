@@ -91,9 +91,7 @@ class Collector(val luRepo: LatestUpdateRepository,
                 } ?: run {
                     logger.info("No manga found to fix url with name : ${update.mangaUrl}")
                 }
-                return
             }
-            return
         }
 
     }
