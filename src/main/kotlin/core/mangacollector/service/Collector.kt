@@ -213,8 +213,8 @@ class Collector(val luRepo: LatestUpdateRepository,
                     mangaLastUpdated = updateArr[1]?.trim()
                 } else if (it.text().contains("Genres")) {
                     val genresLink = it.select("a[href]")
-                    genresLink?.forEach { author ->
-                        genres.add(author.text())
+                    genresLink?.forEach { genre ->
+                        genres.add(genre.text())
                     }
                 }
             }
@@ -436,16 +436,16 @@ class Collector(val luRepo: LatestUpdateRepository,
         logger.info("Genres generation started")
         val page = 1
         val pageItem = 10
-        val genres = linkedSetOf<Genres>()
         var mangas = mangaRepository.findAll(PageRequest.of(page, pageItem))
+        val genresStringSet = linkedSetOf<String>()
         logger.info("Performing genres generation for ${mangas.totalPages} pages for ${mangas.totalElements} items")
         for (x in 1..mangas.totalPages) {
             logger.info("Performing genres generation for batch : $x")
             mangas = mangaRepository.findAll(PageRequest.of(x, pageItem))
-            mangas.content.forEach { manga ->
-                genres.addAll(manga.genres.map { value -> Genres(value) })
-            }
+            val values = mangas.content.flatMap { manga -> manga.genres }.toCollection(destination = linkedSetOf())
+            genresStringSet.addAll(values)
         }
+        val genres = genresStringSet.map { genres -> Genres(genres) }.toCollection(destination = linkedSetOf())
         if (genres.size > 0) {
             genresRepository.saveAll(genres)
         }

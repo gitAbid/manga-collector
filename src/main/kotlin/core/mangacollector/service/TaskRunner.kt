@@ -4,11 +4,12 @@ import org.jsoup.Jsoup
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.scheduling.annotation.Scheduled
+import org.springframework.stereotype.Component
 import java.util.*
 import java.util.concurrent.TimeUnit
 import javax.annotation.PostConstruct
 
-//@Component
+@Component
 class TaskRunner(val collector: Collector) {
     val logger = LoggerFactory.getLogger(TaskRunner::class.java)
 
