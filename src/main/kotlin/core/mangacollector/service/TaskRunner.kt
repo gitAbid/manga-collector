@@ -19,7 +19,6 @@ class TaskRunner(val collector: Collector) {
     @PostConstruct
     fun init() {
         logger.info("TaskRunner initialized")
-        BUC_FULL()
     }
 
     fun BCC_FULL() {
