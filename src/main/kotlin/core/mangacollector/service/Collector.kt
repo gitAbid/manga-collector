@@ -35,7 +35,7 @@ class Collector(var luRepo: LatestUpdateRepository,
             logger.info("Performing url fixes for batch : $x")
             mangas = mangaRepository.findAll(PageRequest.of(x, pageItem))
             for (manga in mangas.content) {
-                println("Fixing broken chapter for manga : ${manga.mangaName}")
+                logger.debug("Fixing broken chapter for manga : ${manga.mangaName}")
                 val updatedChapters = LinkedHashSet<Chapter>()
                 val chapters = manga.chapters
                 for (chapter in chapters) {
