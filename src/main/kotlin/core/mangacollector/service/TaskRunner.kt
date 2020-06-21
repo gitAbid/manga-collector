@@ -16,9 +16,15 @@ class TaskRunner(val collector: Collector) {
     @Value("\${task.latest.manga.collector.page}")
     private val page: Int = 0
 
+    @Value("\${task.enable.full.url.fixer}")
+    private val enableFullUrlFixer: Boolean = false
+
     @PostConstruct
     fun init() {
         logger.info("TaskRunner initialized")
+        if (enableFullUrlFixer) {
+            BUC_FULL()
+        }
     }
 
     fun BCC_FULL() {

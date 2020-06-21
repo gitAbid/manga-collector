@@ -14,8 +14,8 @@ class MangaRestController(val mangaService: MangaService) {
     @GetMapping(path = ["/all"])
     fun getAllMangas(@RequestParam(defaultValue = "0") pageNo: Int,
                      @RequestParam(defaultValue = "10") pageSize: Int,
-                     @RequestParam(defaultValue = "ASC") orderBy: String,
-                     @RequestParam(defaultValue = "id") sortBy: String): Page<MangaCompact> {
+                     @RequestParam(defaultValue = "DESC") orderBy: String,
+                     @RequestParam(defaultValue = "viewCount") sortBy: String): Page<MangaCompact> {
         return mangaService.getAllMangas(pageNo, pageSize, sortBy, orderBy);
     }
 

@@ -1,9 +1,15 @@
 package core.mangacollector.service
 
-import core.mangacollector.model.*
-import core.mangacollector.repository.*
+import core.mangacollector.model.Chapter
+import core.mangacollector.model.LatestMangaUpdate
+import core.mangacollector.model.Manga
+import core.mangacollector.model.UpdateStatus
+import core.mangacollector.repository.LatestUpdateRepository
+import core.mangacollector.repository.MangaRepository
+import core.mangacollector.repository.UpdateStatusRepository
 import org.jsoup.Jsoup
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import java.util.*
@@ -16,8 +22,11 @@ import kotlin.collections.LinkedHashSet
 @Service
 class Collector(val luRepo: LatestUpdateRepository,
                 val mangaRepository: MangaRepository,
-                val updateStatusRepository: UpdateStatusRepository ) {
+                val updateStatusRepository: UpdateStatusRepository) {
     val logger = LoggerFactory.getLogger(Collector::class.java)
+
+    @Value("\${collector.url.fixer.full.start}")
+    var urlFixerStartPage: Int = 1
 
     @PostConstruct
     fun init() {
@@ -62,11 +71,10 @@ class Collector(val luRepo: LatestUpdateRepository,
     }
 
     fun brokenUrlFixerFull() {
-        val page = 1;
         val pageItem = 10;
-        var updates = mangaRepository.findAll(PageRequest.of(page, pageItem));
+        var updates = mangaRepository.findAll(PageRequest.of(urlFixerStartPage, pageItem));
         logger.info("Performing batch url fixes for ${updates.totalPages} pages for ${updates.totalElements} items")
-        for (x in 1..updates.totalPages) {
+        for (x in urlFixerStartPage..updates.totalPages) {
             logger.info("Performing url fixes for batch : $x")
             updates = mangaRepository.findAll(PageRequest.of(x, pageItem));
             updates.content.forEach { update ->
@@ -95,6 +103,7 @@ class Collector(val luRepo: LatestUpdateRepository,
         }
 
     }
+
     fun brokenChapterCollector() {
         val page = 1;
         val pageItem = 10;
