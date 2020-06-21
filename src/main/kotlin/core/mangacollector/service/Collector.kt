@@ -404,7 +404,9 @@ class Collector(val luRepo: LatestUpdateRepository,
         val doc = Jsoup.connect(chapterLink).get()
         val images = doc.select(".container-chapter-reader").select("img")
         images?.forEach {
-            val imageLink = it.attr("abs:src")
+            var imageLink = it.attr("abs:src")
+            imageLink = imageLink.replace(Regex("(s\\d+\\.m)"), "s8.m").replace(Regex("(\\d+\\.com)"), "8.com")
+            imageLink = imageLink.replace("https://bu.mkklcdnbuv8.com", "https://bu.mkklcdnbuv1.com")
             chapterImages.add(imageLink)
         }
         return chapterImages
@@ -415,7 +417,9 @@ class Collector(val luRepo: LatestUpdateRepository,
         val doc = Jsoup.connect(chapterLink).get()
         val images = doc.select(".vung-doc").select("img")
         images?.forEach {
-            val imageLink = it.attr("abs:src")
+            var imageLink = it.attr("abs:src")
+            imageLink = imageLink.replace(Regex("(s\\d+\\.m)"), "s8.m").replace(Regex("(\\d+\\.com)"), "8.com")
+            imageLink = imageLink.replace("https://bu.mkklcdnbuv8.com", "https://bu.mkklcdnbuv1.com")
             chapterImages.add(imageLink)
         }
         return chapterImages
@@ -470,7 +474,7 @@ class Collector(val luRepo: LatestUpdateRepository,
         val page = 1;
         val pageItem = 10;
         var resetContent = mangaRepository.findByTrendingTrue(PageRequest.of(page, pageItem));
-        logger.info("Performing resetting popular status for ${resetContent.totalPages} pages for ${resetContent.totalElements} items")
+        logger.info("Performing resetting trending status for ${resetContent.totalPages} pages for ${resetContent.totalElements} items")
         for (x in 1..resetContent.totalPages) {
             logger.info("Performing resetting popular status for batch : $x")
             resetContent = mangaRepository.findByTrendingTrue(PageRequest.of(page, pageItem));

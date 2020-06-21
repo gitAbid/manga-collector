@@ -19,6 +19,9 @@ class TaskRunner(val collector: Collector) {
     @Value("\${task.enable.full.url.fixer}")
     private val enableFullUrlFixer: Boolean = false
 
+    @Value("\${task.enable.url.fixer}")
+    private val enableUrlFixer: Boolean = false
+
     @PostConstruct
     fun init() {
         logger.info("TaskRunner initialized")
@@ -56,9 +59,9 @@ class TaskRunner(val collector: Collector) {
     fun FREQUENT_RUNNER() {
         LMC_5_MIN()
         MDC_FULL()
-        BUC()
-        TMC()
-        PMC()
+        if (enableUrlFixer) {
+            BUC()
+        }
     }
 
     fun LMC_5_MIN() {
@@ -73,12 +76,14 @@ class TaskRunner(val collector: Collector) {
         }
     }
 
+    @Scheduled(cron = "\${task.runner.trending.schedule}")
     fun TMC() {
         logTaskRunner("TMC") {
             collector.collectTrending()
         }
     }
 
+    @Scheduled(cron = "\${task.runner.popular.schedule}")
     fun PMC() {
         logTaskRunner("PMC") {
             collector.collectMostPopular()
