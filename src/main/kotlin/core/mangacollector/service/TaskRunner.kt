@@ -22,11 +22,17 @@ class TaskRunner(val collector: Collector) {
     @Value("\${task.enable.url.fixer}")
     private val enableUrlFixer: Boolean = false
 
+    @Value("\${task.enable.full.collector}")
+    private val enableFullCollector: Boolean = false
+
     @PostConstruct
     fun init() {
         logger.info("TaskRunner initialized")
         if (enableFullUrlFixer) {
             BUC_FULL()
+        }
+        if(enableFullCollector){
+            LMC_FULL()
         }
     }
 
