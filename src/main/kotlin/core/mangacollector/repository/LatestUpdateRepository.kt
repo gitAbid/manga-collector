@@ -9,5 +9,6 @@ import org.springframework.stereotype.Repository
 @Repository
 interface LatestUpdateRepository : MongoRepository<LatestMangaUpdate, String> {
     fun findByMangaName(name: String): LatestMangaUpdate?
+    fun findByMangaUrl(name: String): List<LatestMangaUpdate>
     fun findByChapterUpdatedTrue(pageable: Pageable): Page<LatestMangaUpdate>
 }

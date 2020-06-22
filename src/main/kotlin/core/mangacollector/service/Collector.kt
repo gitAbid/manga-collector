@@ -162,25 +162,35 @@ class Collector(val luRepo: LatestUpdateRepository,
                     latestChapterUrl = link.attr("abs:href")
                     coverImageUrl = it.select("img").first().attr("abs:src")
 
-                    luRepo.findByMangaName(name)?.let { mangaUpdate ->
-                        mangaUpdate.mangaName = name
-                        mangaUpdate.description = description
-                        mangaUpdate.mangaUrl = mangaUrl
-                        mangaUpdate.cover = coverImageUrl
-                        if (mangaUpdate.latestChapter != latestChapterUrl) {
-                            mangaUpdate.lastChapterUpdated = Date()
-                            mangaUpdate.chapterUpdated = true
-                            updateStatusRepository.save(UpdateStatus(
-                                    mangaUrl = mangaUrl,
-                                    lastChapter = latestChapterUrl
-                            ))
-                        }
-                        mangaUpdate.lastUpdated = Date()
-                        mangaUpdate.viewCount = viewCount
-                        mangaUpdate.latestChapter = latestChapterUrl
-                        luRepo.save(mangaUpdate)
+                    val mangas = luRepo.findByMangaUrl(mangaUrl)
+                    if (mangas.size > 0) {
+                        mangas?.first()?.let { mangaUpdate ->
+                            mangaUpdate.mangaName = name
+                            mangaUpdate.description = description
+                            mangaUpdate.mangaUrl = mangaUrl
+                            mangaUpdate.cover = coverImageUrl
+                            logger.info("Name: ${mangaUpdate.mangaName}")
+                            logger.info("Current: ${mangaUpdate.latestChapter}")
+                            logger.info("From Site: ${latestChapterUrl}")
+                            logger.info(latestChapterUrl)
+                            if (mangaUpdate.latestChapter != latestChapterUrl) {
+                                mangaUpdate.lastChapterUpdated = Date()
+                                mangaUpdate.chapterUpdated = true
+                                updateStatusRepository.save(UpdateStatus(
+                                        mangaUrl = mangaUrl,
+                                        lastChapter = latestChapterUrl
+                                ))
+                            } else {
+                                mangaUpdate.chapterUpdated = false
+                            }
+                            logger.info("Need Update: ${mangaUpdate.chapterUpdated}")
+                            mangaUpdate.lastUpdated = Date()
+                            mangaUpdate.viewCount = viewCount
+                            mangaUpdate.latestChapter = latestChapterUrl
+                            luRepo.save(mangaUpdate)
 
-                    } ?: run {
+                        }
+                    } else {
                         luRepo.save(LatestMangaUpdate(
                                 mangaName = name,
                                 description = description,
