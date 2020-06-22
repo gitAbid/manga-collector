@@ -34,7 +34,7 @@ class MangaServiceImpl(val mangaRepository: MangaRepository,
         return mangaCompactRepository.findAll(PageRequest.of(pageNumber, size, Sort.by(orderBy, sortBy)))
     }
 
-    override fun getMangaBySourceUrl(url: String): Manga? {
+    override fun getMangaBySourceUrl(url: String): List<Manga>? {
         return mangaRepository.findByMangaUrl(url)
     }
 

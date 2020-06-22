@@ -49,6 +49,6 @@ class MangaRestController(val mangaService: MangaService) {
 
     @PostMapping(path = ["/srcUrl"])
     fun getMangaBySourceUrl(@RequestBody requestBySrcUrl: RequestBySrcUrl): Manga? {
-        return mangaService.getMangaBySourceUrl(requestBySrcUrl.mangaUrl);
+        return mangaService.getMangaBySourceUrl(requestBySrcUrl.mangaUrl)?.first();
     }
 }

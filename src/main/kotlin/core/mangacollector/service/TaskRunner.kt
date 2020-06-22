@@ -25,14 +25,21 @@ class TaskRunner(val collector: Collector) {
     @Value("\${task.enable.full.collector}")
     private val enableFullCollector: Boolean = false
 
+    @Value("\${task.enable.latest.chapter.reset}")
+    private val enableLatestChapterReset: Boolean = false
+
     @PostConstruct
     fun init() {
         logger.info("TaskRunner initialized")
         if (enableFullUrlFixer) {
             BUC_FULL()
         }
-        if(enableFullCollector){
+        if (enableFullCollector) {
             LMC_FULL()
+        }
+        if (enableLatestChapterReset) {
+            RLC()
+            MDC_FULL()
         }
     }
 
@@ -67,6 +74,12 @@ class TaskRunner(val collector: Collector) {
         MDC_FULL()
         if (enableUrlFixer) {
             BUC()
+        }
+    }
+
+    fun RLC() {
+        logTaskRunner("RLC") {
+            collector.resetLatestChapter()
         }
     }
 

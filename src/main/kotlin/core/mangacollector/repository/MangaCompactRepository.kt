@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository
 @Repository
 interface MangaCompactRepository : MongoRepository<MangaCompact, String> {
     fun findByMangaNameLike(name: String, pageable: Pageable): Page<MangaCompact>
-    fun findByMangaUrl(url: String): MangaCompact?
+    fun findByMangaUrl(url: String): List<MangaCompact>?
     fun findByMangaName(name: String): MangaCompact?
     fun findByTrendingTrue(pageable: Pageable): Page<MangaCompact>
     fun findByMostPopularTrue(pageable: Pageable): Page<MangaCompact>
