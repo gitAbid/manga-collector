@@ -28,7 +28,7 @@ class Collector(val luRepo: LatestUpdateRepository,
     val logger = LoggerFactory.getLogger(Collector::class.java)
 
     @Value("\${collector.url.fixer.full.start}")
-    var urlFixerStartPage: Int = 1
+    var urlFixerStartPage: Int = 0
 
     @PostConstruct
     fun init() {
@@ -36,11 +36,11 @@ class Collector(val luRepo: LatestUpdateRepository,
     }
 
     fun brokenUrlFixer() {
-        val page = 1
+        val page = 0
         val pageItem = 10
         var updates = updateStatusRepository.findAll(PageRequest.of(page, pageItem))
         logger.info("Performing batch url fixes for ${updates.totalPages} pages for ${updates.totalElements} items")
-        for (x in 1..updates.totalPages) {
+        for (x in page..updates.totalPages) {
             logger.info("Performing url fixes for batch : $x")
             updates = updateStatusRepository.findAll(PageRequest.of(x, pageItem))
             updates.content.forEach { update ->
@@ -109,12 +109,12 @@ class Collector(val luRepo: LatestUpdateRepository,
     }
 
     fun brokenChapterCollector() {
-        val page = 1
+        val page = 0
         val pageItem = 10
         var mangas = mangaRepository.findAll(PageRequest.of(page, pageItem))
         val nameSet = HashSet<String>()
         logger.info("Performing batch chapter fixes for ${mangas.totalPages} pages for ${mangas.totalElements} items")
-        for (x in 1..mangas.totalPages) {
+        for (x in page..mangas.totalPages) {
             logger.info("Performing chapter fixes for batch : $x")
             mangas = mangaRepository.findAll(PageRequest.of(x, pageItem))
             mangas.content.forEach { manga ->
@@ -215,11 +215,11 @@ class Collector(val luRepo: LatestUpdateRepository,
 
     fun mangaDetailsCollector() {
         logger.info("Running manga details collector")
-        val page = 1
+        val page = 0
         val pageItem = 20
         var mangas = luRepo.findByChapterUpdatedTrue(PageRequest.of(page, pageItem))
         logger.info("Performing batch manga collecton for ${mangas.totalPages} pages for ${mangas.totalElements} items")
-        for (x in 1..mangas.totalPages) {
+        for (x in page..mangas.totalPages) {
             logger.info("Performing manga collecton for batch : $x")
             mangas = luRepo.findByChapterUpdatedTrue(PageRequest.of(x, pageItem))
             mangas.content.forEach {
@@ -486,11 +486,11 @@ class Collector(val luRepo: LatestUpdateRepository,
 
 
     fun resetTrendingTag() {
-        val page = 1
+        val page = 0
         val pageItem = 10
         var resetContent = mangaRepository.findByTrendingTrue(PageRequest.of(page, pageItem))
         logger.info("Performing resetting trending status for ${resetContent.totalPages} pages for ${resetContent.totalElements} items")
-        for (x in 1..resetContent.totalPages) {
+        for (x in page..resetContent.totalPages) {
             logger.info("Performing resetting popular status for batch : $x")
             resetContent = mangaRepository.findByTrendingTrue(PageRequest.of(page, pageItem))
             resetContent.content.map { mangaCompact -> mangaCompact.trending = false }
@@ -501,11 +501,11 @@ class Collector(val luRepo: LatestUpdateRepository,
     }
 
     fun resetMostPopularTag() {
-        val page = 1
+        val page = 0
         val pageItem = 10
         var resetContent = mangaRepository.findByMostPopularTrue(PageRequest.of(page, pageItem))
         logger.info("Performing resetting popular status for ${resetContent.totalPages} pages for ${resetContent.totalElements} items")
-        for (x in 1..resetContent.totalPages) {
+        for (x in page..resetContent.totalPages) {
             logger.info("Performing resetting popular status for batch : $x")
             resetContent = mangaRepository.findByMostPopularTrue(PageRequest.of(x, pageItem))
             resetContent.content.map { mangaCompact -> mangaCompact.trending = false }
@@ -516,30 +516,29 @@ class Collector(val luRepo: LatestUpdateRepository,
     }
 
     fun resetLatestChapter() {
-        val page = 1
+        val page = 0
         val pageItem = 50
         var resetContent = luRepo.findAll(PageRequest.of(page, pageItem))
         logger.info("Performing resetting for latest chapter status for ${resetContent.totalPages} pages for ${resetContent.totalElements} items")
-        for (x in 1..resetContent.totalPages) {
+        for (x in page..resetContent.totalPages) {
             logger.info("Performing resetting for latest chapter status for for batch : $x")
             resetContent = luRepo.findAll(PageRequest.of(x, pageItem))
-            resetContent.content.map { update -> getChapterUpdateStatus(update) }
-            luRepo.saveAll(resetContent)
-        }
-        logger.info("Finished resetting for latest chapter status for ${resetContent.totalPages} pages for ${resetContent.totalElements} items")
-    }
-
-    private fun getChapterUpdateStatus(update: LatestMangaUpdate) {
-        val mangas = mangaCompactRepository.findByMangaUrl(update.mangaUrl)
-        if (mangas == null) {
-            update.chapterUpdated = true
-        } else {
-            mangas.first().let { manga ->
-                update.chapterUpdated = manga.latestChapter != update.latestChapter
-                if (update.chapterUpdated) {
-                    logger.info("${manga.latestChapter} -> ${update.latestChapter}")
+            resetContent.content.forEach { update ->
+                val mangas = mangaCompactRepository.findByMangaUrl(update.mangaUrl)
+                if (mangas == null || mangas.isEmpty()) {
+                    update.chapterUpdated = true
+                } else {
+                    mangas.first().let { manga ->
+                        update.chapterUpdated = manga.latestChapter != update.latestChapter
+                        if (update.chapterUpdated) {
+                            logger.info("${manga.latestChapter} -> ${update.latestChapter}")
+                        }
+                    }
                 }
+
+                luRepo.save(update)
             }
         }
+        logger.info("Finished resetting for latest chapter status for ${resetContent.totalPages} pages for ${resetContent.totalElements} items")
     }
 }
